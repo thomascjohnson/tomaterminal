@@ -1,8 +1,8 @@
-#!/usr/bin/python
+#!/usr/local/bin/python3
 import time
 import sys
 import argparse
-
+from numpy import floor
 
 description_string = """Tomaterminal is a terminal program based on the Pomodoro
  (Italian for Tomato) method of working. In the Pomodoro method, you take a timer
@@ -21,6 +21,8 @@ seconds_minute = 60
 minutes_hour = 60
 hours_day = 24
 
+intervals = 60
+
 # Task Definitions
 task_time = 25
 break_time = 5
@@ -32,7 +34,7 @@ if args.break_time is not None:
     break_time = args.break_time
 
 # UI Definitions
-progress_bar_length = 40
+progress_bar_length = 80
 
 
 def alert():
@@ -46,18 +48,22 @@ def progress(count, total, suffix=''):
     sys.stdout.write('[%s] %s%s %s\r' % (bar, percents, '%', suffix))
     sys.stdout.flush()
 
+def pomodoro(task_minutes: int, nintervals: int, message: str):
+    progress(0, task_minutes, f"{message}: 00:00")
+    for i in range(0, task_minutes):
+        for j in range(0, nintervals):
+            time.sleep(seconds_minute / intervals)
+            t = i + j / intervals
+            minutes = int(floor(t))
+            seconds = int(60 * (t - minutes))
+            suffix = f"{message}: {minutes:02d}:{seconds:02d}"
+            progress(t, task_minutes, suffix)
+    alert()
+
 # Initial Entry into Program; Clear Screen
 print(chr(27) + "[2J")
 while True:
     # Task Loop
-    progress(0, task_time, 'Task Time Elapsed: 0:00')
-    for i in range(0, task_time):
-        time.sleep(seconds_minute)
-        progress(i, task_time, 'Task Time Elapsed: %s:00' % i)
-    alert()
+    pomodoro(task_time, intervals, "Time Elapsed")
     # Break Loop
-    progress(0, task_time, 'Break Time Elapsed: 0:00')
-    for i in range(0, break_time):
-        time.sleep(seconds_minute)
-        progress(i, break_time, 'Break Time Elapsed: %s:00' % i)
-    alert()
+    pomodoro(break_time, intervals, "Break Time Elapsed")
